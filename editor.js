@@ -149,8 +149,30 @@ class PixelEditor {
             if (onMove) return pos => onMove(pos, this.state);
         });
         this.controls = controls.map(Control => new Control(state, config));
+        let props = {
+            tabIndex: 0,
+            onkeydown: (event) => {
+                if (!(event.metaKey || event.ctrlKey))
+                    return;
+                if (event.key === "z") {
+                    event.preventDefault();
+                    dispatch({undo: true});
+                }
+                else {
+                    const keys = Object.keys(tools);
+                    for (let i = 0; i < keys.length; i++) {
+                        const letter = keys[i][0].toLowerCase();
+                        if (event.key === letter) {
+                            event.preventDefault();
+                            dispatch({tool: keys[i]});
+                            break;
+                        }
+                    }
+                }
+            }
+        };
         this.dom = elt(
-            "div", {}, this.canvas.dom, elt("br"),
+            "div", props, this.canvas.dom, elt("br"),
             ...this.controls.reduce(
                 (a, c) => a.concat(" ", c.dom), []
             )
